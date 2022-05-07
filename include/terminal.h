@@ -21,12 +21,12 @@
 void init_terminal();
 void clear_terminal();
 void print(char *string);
-void cursor_up(int lines);
 void println(char *string);
+void cursor_up(int lines);
 void cursor_down(int lines);
 void cursor_left(int spaces);
-void putchar_(char character);
 void cursor_right(int spaces);
+void putchar(char character);
 void write(char *string, size_t length);
 void print_status(char *text, int level, int go_up);
 

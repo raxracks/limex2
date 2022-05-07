@@ -1,4 +1,6 @@
 #define SSFN_CONSOLEBITMAP_TRUECOLOR
+#define SSFN_CONSOLEBITMAP_CONTROL
+#define __THROW
 
 #include <framebuffer.h>
 #include <structs.h>
@@ -17,11 +19,6 @@ int width;
 int height;
 int cursor_x = 0;
 int cursor_y = 0;
-int text_foreground = 0xffffff;
-int fb_terminal_padding = 5;
-
-int x_spacing = 8;
-int y_spacing = 16;
 
 int init_framebuffer(uint64_t sfn)
 {
@@ -32,12 +29,12 @@ int init_framebuffer(uint64_t sfn)
         print_status("Framebuffer response is non-null.", SUCCESS, 1);
 
         char buf[100];
-        sprintf_(buf, "%d framebuffer(s) present.", framebuffer_request.response->framebuffer_count);
+        sprintf(buf, "%d framebuffer(s) present.", framebuffer_request.response->framebuffer_count);
         print_status(buf, INFO, 0);
 
         for (int i = 0; i < framebuffer_request.response->framebuffer_count; i++)
         {
-            sprintf_(buf, "Framebuffer #%d resolution: %dx%d", i + 1, framebuffer_request.response->framebuffers[i]->width, framebuffer_request.response->framebuffers[i]->height);
+            sprintf(buf, "Framebuffer #%d resolution: %dx%d", i + 1, framebuffer_request.response->framebuffers[i]->width, framebuffer_request.response->framebuffers[i]->height);
             print_status(buf, INFO, 0);
         }
 
@@ -49,24 +46,25 @@ int init_framebuffer(uint64_t sfn)
 
         fb_clear(0);
 
+        ssfn_src = (ssfn_font_t *)(sfn); /* the bitmap font to use */
+
+        ssfn_dst.ptr = framebuffer;              /* address of the linear frame buffer */
+        ssfn_dst.w = framebuffer_struct->width;  /* width */
+        ssfn_dst.h = framebuffer_struct->height; /* height */
+        ssfn_dst.p = 4096;                       /* bytes per line */
+        ssfn_dst.x = 0;                          /* pen position */
+        ssfn_dst.y = 0;
+        ssfn_dst.fg = 0xFFFFFF; /* foreground color */
+
         return 1;
     }
     else
         print_status("Framebuffer response is null!", ERROR, 1);
 
-    ssfn_src = &sfn; /* the bitmap font to use */
-
-    ssfn_dst.ptr = front_buffer;             /* address of the linear frame buffer */
-    ssfn_dst.w = framebuffer_struct->width;  /* width */
-    ssfn_dst.h = framebuffer_struct->height; /* height */
-    ssfn_dst.p = 4096;                       /* bytes per line */
-    ssfn_dst.x = ssfn_dst.y = 0;             /* pen position */
-    ssfn_dst.fg = 0xFFFFFF;                  /* foreground color */
-
     return 0;
 }
 
-void pixel(int x, int y, int color)
+void fb_pixel(int x, int y, int color)
 {
     framebuffer[width * y + x] = color;
 }
@@ -85,9 +83,9 @@ void fb_swap()
     }
 }
 
-void fb_fill_rect(int x, int y, int w, uint32_t h, uint32_t color)
+void fb_fill_rect(int x, int y, int w, int h, int color)
 {
-    uint32_t i = width * (y - 1);
+    int i = width * (y - 1);
 
     if (x >= 0 && x + w < width && y >= 0 && y + h < height)
     {
@@ -115,67 +113,69 @@ void fb_fill_rect(int x, int y, int w, uint32_t h, uint32_t color)
     }
 }
 
-// void putchar_(char character)
-// {
-// if (character == '\n')
-// {
-//     cursor_x = 0;
-//     cursor_y += y_spacing;
-//     return;
-// }
+void fb_putchar(char character)
+{
+    if (character == '\n')
+    {
+        cursor_x = 0;
+        fb_cursor_down();
+        return;
+    }
 
-// int px = 0;
-// uint64_t bCh = FONT[character];
+    fb_cursor_right();
 
-// if (cursor_x + 8 < 0 || cursor_x > width || cursor_y + 8 < 0 || cursor_y > height)
-//     return;
+    ssfn_putc(character);
+}
 
-// if (cursor_x >= 0 && cursor_x + 8 < width && cursor_y >= 0 && cursor_y + 8 < height)
-// {
-//     int i = width * (cursor_y - 1 + fb_terminal_padding) + cursor_x + 8 + fb_terminal_padding;
-//     int incAmount = width - 8;
-//     for (int yy = 7; yy >= 0; yy--)
-//     {
-//         i += incAmount;
-//         for (int xx = 7; xx >= 0; xx--)
-//         {
-//             if ((bCh >> px++) & 1)
-//             {
-//                 framebuffer[i] = text_foreground;
-//             }
-//             i++;
-//         }
-//     }
-// }
-// else
-// {
-//     int xpos = 0;
-//     int i = width * (cursor_y - 1 + fb_terminal_padding);
-//     for (int yy = 0; yy < 8; yy++)
-//     {
-//         i += width;
-//         xpos = cursor_x + fb_terminal_padding;
-//         for (int xx = 7; xx >= 0; xx--)
-//         {
-//             if ((bCh >> px++) & 1)
-//             {
-//                 if (xpos > 0 && xpos < width && yy + cursor_y + fb_terminal_padding > 0 && yy + cursor_y + fb_terminal_padding < height)
-//                     framebuffer[i + xpos] = text_foreground;
-//             }
-//             xpos++;
-//         }
-//     }
-// }
+void fb_cursor_set_pos(int x, int y)
+{
+    ssfn_dst.x = x * 8;
+    ssfn_dst.y = y * 16;
+    cursor_x = x;
+    cursor_y = y;
+}
 
-// cursor_x += x_spacing;
+void fb_cursor_reset()
+{
+    fb_cursor_set_pos(0, 0);
+}
 
-//     ssfn_putc(character);
-// }
+void fb_text_color(int foreground, int background)
+{
+    ssfn_dst.fg = foreground;
+    ssfn_dst.bg = background;
+}
 
 void fb_cursor_up()
 {
-    cursor_y -= y_spacing;
+    cursor_y--;
 
-    if (cursor_y < 0)
-        cursor_y = 0;
+    fb_cursor_set_pos(cursor_x, cursor_y);
+
+    if (ssfn_dst.y < 0)
+        fb_cursor_set_pos(cursor_x, 1);
+}
+
+void fb_cursor_down()
+{
+    cursor_y++;
+
+    fb_cursor_set_pos(cursor_x, cursor_y);
+}
+
+void fb_cursor_left()
+{
+    cursor_x--;
+
+    fb_cursor_set_pos(cursor_x, cursor_y);
+
+    if (ssfn_dst.x < 0)
+        fb_cursor_set_pos(1, cursor_y);
+}
+
+void fb_cursor_right()
+{
+    cursor_x++;
+
+    fb_cursor_set_pos(cursor_x, cursor_y);
 }

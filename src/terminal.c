@@ -84,7 +84,7 @@ void print_status(char *text, int level, int go_up)
     }
 }
 
-void putchar_(char character)
+void putchar(char character)
 {
     terminal_request.response->write(terminal, &character, 1);
 }

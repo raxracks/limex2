@@ -1,3 +1,5 @@
+#define PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
+
 #include <stddef.h>
 #include <kernel.h>
 #include <structs.h>
@@ -39,7 +41,7 @@ struct limine_file *find_limine_module(char *module_name)
 {
     for (size_t i = 0; i < module_request.response->module_count; i++)
     {
-        printf("[%x] %s module found.\n", module_request.response->modules[i]->address, module_request.response->modules[i]->cmdline);
+        // printf("[%x] %s module found.\n", module_request.response->modules[i]->address, module_request.response->modules[i]->cmdline);
     }
 
     return module_request.response->modules[0];
@@ -50,80 +52,75 @@ void _start(void)
     init_terminal();
     print_status("Terminal initialized.", SUCCESS, 0);
 
+    struct limine_file *sfn_module = find_limine_module("sfn");
+
+    if (!init_framebuffer(sfn_module->address))
+        panic("Framebuffer failed to initialize.");
+
+    fb_cursor_reset();
+
+    fb_swap();
+
     if (paging_request.response != NULL)
         print_status("5 level paging enabled.", SUCCESS, 0);
     else
         print_status("5 level paging disabled.", WARNING, 0);
 
-    struct limine_file *sfn_module = find_limine_module("sfn");
-    if (!init_framebuffer(sfn_module->address))
-        panic("Framebuffer failed to initialize.");
+    fb_swap();
 
-    if (module_request.response != NULL)
-        printf("Module request is non-null\n");
+    rtc_print();
+    printf("FPS: %d\n", framesInSecond);
+    fb_swap();
 
-    printf("SSFN Error: %d\n", ssfn_putc('a'));
-    printf("SSFN Magic: %d\n", ssfn_src->magic);
-    printf("SFN Address: %x\n", sfn_module->address);
+    while (1)
+    {
+        fb_clear(0x333333);
+        fb_cursor_up();
+        fb_cursor_up();
+        rtc_print();
 
-    // ugly
+        printf("FPS: %d\n", framesInSecond);
 
-    // for (int i = 0; i < 100; i++)
-    //     fb_cursor_up();
+        fb_fill_rect(x, y, 100, 100, 0xffffff);
 
-    // rtc_print();
-    // printf("FPS: %d\n", framesInSecond);
-    // fb_swap();
+        if (!xRev)
+            x++;
+        else
+            x--;
+        if (!yRev)
+            y++;
+        else
+            y--;
 
-    // while (1)
-    // {
-    //     fb_clear(0x333333);
-    //     fb_cursor_up();
-    //     fb_cursor_up();
-    //     rtc_print();
+        if (x > 924)
+        {
+            xRev = 1;
+        }
+        else if (x < 0)
+        {
+            xRev = 0;
+        }
 
-    //     printf("FPS: %d\n", framesInSecond);
+        if (y > 668)
+        {
+            yRev = 1;
+        }
+        else if (y < 0)
+        {
+            yRev = 0;
+        }
 
-    //     fb_fill_rect(x, y, 100, 100, 0xffffff);
+        fb_swap();
 
-    //     if (!xRev)
-    //         x++;
-    //     else
-    //         x--;
-    //     if (!yRev)
-    //         y++;
-    //     else
-    //         y--;
+        frames++;
 
-    //     if (x > 924)
-    //     {
-    //         xRev = 1;
-    //     }
-    //     else if (x < 0)
-    //     {
-    //         xRev = 0;
-    //     }
-
-    //     if (y > 668)
-    //     {
-    //         yRev = 1;
-    //     }
-    //     else if (y < 0)
-    //     {
-    //         yRev = 0;
-    //     }
-
-    //     fb_swap();
-
-    //     frames++;
-
-    //     if (rtc_second() != second)
-    //     {
-    //         framesInSecond = frames;
-    //         frames = 0;
-    //         second = rtc_second();
-    //     }
-    // }
+        if (rtc_second() != second)
+        {
+            framesInSecond = frames;
+            frames = 0;
+            second = rtc_second();
+        }
+    }
 
     done();
 }

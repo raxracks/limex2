@@ -42,110 +42,101 @@
 #include <stdarg.h>
 #include <stddef.h>
 
-
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #ifdef __GNUC__
-# define ATTR_PRINTF(one_based_format_index, first_arg) \
-__attribute__((format(__printf__, (one_based_format_index), (first_arg))))
-# define ATTR_VPRINTF(one_based_format_index) ATTR_PRINTF(one_based_format_index, 0)
+#define ATTR_PRINTF(one_based_format_index, first_arg) \
+    __attribute__((format(__printf__, (one_based_format_index), (first_arg))))
+#define ATTR_VPRINTF(one_based_format_index) ATTR_PRINTF(one_based_format_index, 0)
 #else
-# define ATTR_PRINTF(one_based_format_index, first_arg)
-# define ATTR_VPRINTF(one_based_format_index)
+#define ATTR_PRINTF(one_based_format_index, first_arg)
+#define ATTR_VPRINTF(one_based_format_index)
 #endif
 
 #ifndef PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
 #define PRINTF_ALIAS_STANDARD_FUNCTION_NAMES 0
 #endif
 
-#if PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
-# define printf_    printf
-# define sprintf_   sprintf
-# define vsprintf_  vsprintf
-# define snprintf_  snprintf
-# define vsnprintf_ vsnprintf
-# define vprintf_   vprintf
-#endif
+#define printf_ printf
+#define sprintf_ sprintf
+#define vsprintf_ vsprintf
+#define snprintf_ snprintf
+#define vsnprintf_ vsnprintf
+#define vprintf_ vprintf
 
-/**
- * Output a character to a custom device like UART, used by the printf() function
- * This function is declared here only. You have to write your custom implementation somewhere
- * @param character Character to output
- */
-void putchar_(char character);
+    /**
+     * Output a character to a custom device like UART, used by the printf() function
+     * This function is declared here only. You have to write your custom implementation somewhere
+     * @param character Character to output
+     */
+    void fb_putchar(char character);
 
+    /**
+     * Tiny printf implementation
+     * You have to implement putchar_ if you use printf()
+     * To avoid conflicts with the regular printf() API it is overridden by macro defines
+     * and internal underscore-appended functions like printf_() are used
+     * @param format A string that specifies the format of the output
+     * @return The number of characters that are written into the array, not counting the terminating null character
+     */
+    int printf(const char *format, ...) ATTR_PRINTF(1, 2);
 
-/**
- * Tiny printf implementation
- * You have to implement putchar_ if you use printf()
- * To avoid conflicts with the regular printf() API it is overridden by macro defines
- * and internal underscore-appended functions like printf_() are used
- * @param format A string that specifies the format of the output
- * @return The number of characters that are written into the array, not counting the terminating null character
- */
-int printf(const char* format, ...) ATTR_PRINTF(1, 2);
+    /**
+     * Tiny sprintf/vsprintf implementation
+     * Due to security reasons (buffer overflow) YOU SHOULD CONSIDER USING (V)SNPRINTF INSTEAD!
+     * @param buffer A pointer to the buffer where to store the formatted string. MUST be big enough to store the output!
+     * @param format A string that specifies the format of the output
+     * @param va A value identifying a variable arguments list
+     * @return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
+     */
+    int sprintf_(char *buffer, const char *format, ...) ATTR_PRINTF(2, 3);
+    int vsprintf_(char *buffer, const char *format, va_list va) ATTR_VPRINTF(2);
 
+    /**
+     * Tiny snprintf/vsnprintf implementation
+     * @param buffer A pointer to the buffer where to store the formatted string
+     * @param count The maximum number of characters to store in the buffer, including a terminating null character
+     * @param format A string that specifies the format of the output
+     * @param va A value identifying a variable arguments list
+     * @return The number of characters that COULD have been written into the buffer, not counting the terminating
+     *         null character. A value equal or larger than count indicates truncation. Only when the returned value
+     *         is non-negative and less than count, the string has been completely written.
+     */
+    int snprintf_(char *buffer, size_t count, const char *format, ...) ATTR_PRINTF(3, 4);
+    int vsnprintf_(char *buffer, size_t count, const char *format, va_list va) ATTR_VPRINTF(3);
 
-/**
- * Tiny sprintf/vsprintf implementation
- * Due to security reasons (buffer overflow) YOU SHOULD CONSIDER USING (V)SNPRINTF INSTEAD!
- * @param buffer A pointer to the buffer where to store the formatted string. MUST be big enough to store the output!
- * @param format A string that specifies the format of the output
- * @param va A value identifying a variable arguments list
- * @return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
- */
-int  sprintf_(char* buffer, const char* format, ...) ATTR_PRINTF(2, 3);
-int vsprintf_(char* buffer, const char* format, va_list va) ATTR_VPRINTF(2);
+    /**
+     * Tiny vprintf implementation
+     * @param format A string that specifies the format of the output
+     * @param va A value identifying a variable arguments list
+     * @return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
+     */
+    int vprintf_(const char *format, va_list va) ATTR_VPRINTF(1);
 
-
-/**
- * Tiny snprintf/vsnprintf implementation
- * @param buffer A pointer to the buffer where to store the formatted string
- * @param count The maximum number of characters to store in the buffer, including a terminating null character
- * @param format A string that specifies the format of the output
- * @param va A value identifying a variable arguments list
- * @return The number of characters that COULD have been written into the buffer, not counting the terminating
- *         null character. A value equal or larger than count indicates truncation. Only when the returned value
- *         is non-negative and less than count, the string has been completely written.
- */
-int  snprintf_(char* buffer, size_t count, const char* format, ...) ATTR_PRINTF(3, 4);
-int vsnprintf_(char* buffer, size_t count, const char* format, va_list va) ATTR_VPRINTF(3);
-
-
-/**
- * Tiny vprintf implementation
- * @param format A string that specifies the format of the output
- * @param va A value identifying a variable arguments list
- * @return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
- */
-int vprintf_(const char* format, va_list va) ATTR_VPRINTF(1);
-
-
-/**
- * printf/vprintf with output function
- * You may use this as dynamic alternative to printf() with its fixed _putchar() output
- * @param out An output function which takes one character and an argument pointer
- * @param arg An argument pointer for user data passed to output function
- * @param format A string that specifies the format of the output
- * @param va A value identifying a variable arguments list
- * @return The number of characters that are sent to the output function, not counting the terminating null character
- */
-int fctprintf(void (*out)(char character, void* arg), void* arg, const char* format, ...) ATTR_PRINTF(3, 4);
-int vfctprintf(void (*out)(char character, void* arg), void* arg, const char* format, va_list va) ATTR_VPRINTF(3);
+    /**
+     * printf/vprintf with output function
+     * You may use this as dynamic alternative to printf() with its fixed _putchar() output
+     * @param out An output function which takes one character and an argument pointer
+     * @param arg An argument pointer for user data passed to output function
+     * @param format A string that specifies the format of the output
+     * @param va A value identifying a variable arguments list
+     * @return The number of characters that are sent to the output function, not counting the terminating null character
+     */
+    int fctprintf(void (*out)(char character, void *arg), void *arg, const char *format, ...) ATTR_PRINTF(3, 4);
+    int vfctprintf(void (*out)(char character, void *arg), void *arg, const char *format, va_list va) ATTR_VPRINTF(3);
 
 #ifdef __cplusplus
 }
 #endif
 
-#if PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
-# undef printf_
-# undef sprintf_
-# undef vsprintf_
-# undef snprintf_
-# undef vsnprintf_
-# undef vprintf_
-#endif
+#undef printf_
+#undef sprintf_
+#undef vsprintf_
+#undef snprintf_
+#undef vsnprintf_
+#undef vprintf_
 
-#endif  // PRINTF_H_
+#endif // PRINTF_H_
