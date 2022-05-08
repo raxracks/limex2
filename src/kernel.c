@@ -103,10 +103,7 @@ void _start(void)
         else
             fb_print_status("5 level paging disabled.", WARNING, 0);
 
-        printf("CPU Vendor: ");
-        cpu_print_vendor_string();
-        printf("\n");
-
+        fb_print_status("Testing", SUCCESS, 0);
         fb_print_status("Testing", WARNING, 0);
         fb_print_status("Testing", ERROR, 0);
         fb_print_status("Testing", PENDING, 0);
