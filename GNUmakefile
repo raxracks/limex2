@@ -54,7 +54,7 @@ $(KERNEL): $(OBJ) $(ASMOBJ)
 %.o: %.c
 	$(CC) $(CFLAGS) $(INTERNALCFLAGS) -c $< -o $@
 
-%.o: %.asm
+%.o: %.s
 	$(ASM) $(ASMFLAGS) $< -o $@
 
 iso: clean

@@ -1,5 +1,3 @@
-#define PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
-
 #include <stddef.h>
 #include <kernel.h>
 #include <structs.h>
@@ -11,6 +9,11 @@
 #include <ssfn.h>
 #include <cpu.h>
 #include <string.h>
+#include <gdt.h>
+#include <idt.h>
+#include <io.h>
+#include <memory.h>
+#include <program.h>
 
 // nice hardcoding
 int frames = 0;
@@ -22,14 +25,6 @@ int y = 0;
 
 int xRev = 0;
 int yRev = 0;
-
-static void done(void)
-{
-    for (;;)
-    {
-        __asm__("hlt");
-    }
-}
 
 void panic(char *reason)
 {
@@ -74,80 +69,89 @@ void _start(void)
     else
         fb_print_status("5 level paging disabled.", WARNING, 0);
 
-    fb_cursor_reset();
+    fb_print_status("Initializing GDT...", PENDING, 0);
+    gdt_init();
+    fb_print_status("GDT Initialized.", SUCCESS, 0);
+
+    fb_print_status("Initializing IDT...", PENDING, 0);
+    idt_init();
+    fb_print_status("IDT Initialized.", SUCCESS, 0);
+
+    // outb(0x21, 0xfd);
+    // outb(0xa1, 0xff);
+    // asm("sti");
+
+    // int addr = &hi;
+
+    unsigned char *destptr = (unsigned char *)0x20000000;
+    memcpy(destptr, test, test_size);
+
+    typedef void (*func_ptr)(void);
+    func_ptr f = (func_ptr)(destptr);
+    f();
 
     rtc_print();
-    printf("FPS: %d\n", framesInSecond);
-    fb_print_status("Testing", INFO, 0);
-    fb_print_status("Testing", SUCCESS, 0);
-    fb_print_status("Testing", WARNING, 0);
-    fb_print_status("Testing", ERROR, 0);
-    fb_print_status("Testing", PENDING, 0);
+    // printf("FPS: %d\n", framesInSecond);
+
+    fb_swap();
 
     while (1)
     {
-        fb_clear(0x333333);
-        fb_cursor_up();
-        fb_cursor_up();
-        fb_cursor_up();
-        fb_cursor_up();
-        fb_cursor_up();
-        fb_cursor_up();
-        fb_cursor_up();
+        // fb_clear(0x333333);
+        // fb_cursor_reset();
 
-        rtc_print();
-        printf("FPS: %d\n", framesInSecond);
+        // rtc_print();
+        // printf("FPS: %d\n", framesInSecond);
 
-        if (paging_request.response != NULL)
-            fb_print_status("5 level paging enabled.", SUCCESS, 0);
-        else
-            fb_print_status("5 level paging disabled.", WARNING, 0);
+        // if (paging_request.response != NULL)
+        //     fb_print_status("5 level paging enabled.", SUCCESS, 0);
+        // else
+        //     fb_print_status("5 level paging disabled.", WARNING, 0);
 
-        fb_print_status("Testing", SUCCESS, 0);
-        fb_print_status("Testing", WARNING, 0);
-        fb_print_status("Testing", ERROR, 0);
-        fb_print_status("Testing", PENDING, 0);
+        // fb_print_status("Initializing GDT...", PENDING, 0);
+        // fb_print_status("GDT Initialized.", SUCCESS, 0);
 
-        fb_fill_rect(x, y, 100, 100, 0xffffff);
+        // fb_print_status("Initializing IDT...", PENDING, 0);
+        // fb_print_status("IDT Initialized.", SUCCESS, 0);
 
-        if (!xRev)
-            x++;
-        else
-            x--;
-        if (!yRev)
-            y++;
-        else
-            y--;
+        // fb_fill_rect(x, y, 100, 100, 0xffffff);
 
-        if (x > 924)
-        {
-            xRev = 1;
-        }
-        else if (x < 0)
-        {
-            xRev = 0;
-        }
+        // if (!xRev)
+        //     x++;
+        // else
+        //     x--;
+        // if (!yRev)
+        //     y++;
+        // else
+        //     y--;
 
-        if (y > 668)
-        {
-            yRev = 1;
-        }
-        else if (y < 0)
-        {
-            yRev = 0;
-        }
+        // if (x > 924)
+        // {
+        //     xRev = 1;
+        // }
+        // else if (x < 0)
+        // {
+        //     xRev = 0;
+        // }
 
-        fb_swap();
+        // if (y > 668)
+        // {
+        //     yRev = 1;
+        // }
+        // else if (y < 0)
+        // {
+        //     yRev = 0;
+        // }
 
-        frames++;
+        // fb_swap();
 
-        if (rtc_second() != second)
-        {
-            framesInSecond = frames;
-            frames = 0;
-            second = rtc_second();
-        }
+        // frames++;
+
+        // if (rtc_second() != second)
+        // {
+        //     framesInSecond = frames;
+        //     frames = 0;
+        //     second = rtc_second();
+        // }
     }
-
-    done();
 }
