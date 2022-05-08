@@ -19,23 +19,24 @@ int width;
 int height;
 int cursor_x = 0;
 int cursor_y = 0;
+int do_swap = 1;
 
 int init_framebuffer(uint64_t sfn)
 {
-    print_status("Checking for valid framebuffer response...", PENDING, 0);
+    tm_print_status("Checking for valid framebuffer response...", PENDING, 0);
 
     if (framebuffer_request.response != NULL)
     {
-        print_status("Framebuffer response is non-null.", SUCCESS, 1);
+        tm_print_status("Framebuffer response is non-null.", SUCCESS, 1);
 
         char buf[100];
         sprintf(buf, "%d framebuffer(s) present.", framebuffer_request.response->framebuffer_count);
-        print_status(buf, INFO, 0);
+        tm_print_status(buf, INFO, 0);
 
         for (int i = 0; i < framebuffer_request.response->framebuffer_count; i++)
         {
             sprintf(buf, "Framebuffer #%d resolution: %dx%d", i + 1, framebuffer_request.response->framebuffers[i]->width, framebuffer_request.response->framebuffers[i]->height);
-            print_status(buf, INFO, 0);
+            tm_print_status(buf, INFO, 0);
         }
 
         framebuffer_struct = framebuffer_request.response->framebuffers[0];
@@ -59,7 +60,7 @@ int init_framebuffer(uint64_t sfn)
         return 1;
     }
     else
-        print_status("Framebuffer response is null!", ERROR, 1);
+        tm_print_status("Framebuffer response is null!", ERROR, 1);
 
     return 0;
 }
@@ -142,8 +143,10 @@ void fb_cursor_reset()
 
 void fb_text_color(int foreground, int background)
 {
-    ssfn_dst.fg = foreground;
-    ssfn_dst.bg = background;
+    if (foreground != NULL)
+        ssfn_dst.fg = foreground;
+    if (background != NULL)
+        ssfn_dst.bg = background;
 }
 
 void fb_cursor_up()
@@ -178,4 +181,70 @@ void fb_cursor_right()
     cursor_x++;
 
     fb_cursor_set_pos(cursor_x, cursor_y);
+}
+
+void fb_print_status(char *text, int level, int go_up)
+{
+    switch (level)
+    {
+    case 0:
+        if (go_up == 1)
+            fb_cursor_up(1);
+
+        fb_text_color(0xffffff, NULL);
+        printf("[INFO]    %s                              \n", text);
+        break;
+    case 1:
+        if (go_up == 1)
+            fb_cursor_up(1);
+
+        fb_text_color(0xffffff, NULL);
+        printf("[");
+        fb_text_color(0x3ce663, NULL);
+        printf("SUCCESS");
+        fb_text_color(0xffffff, NULL);
+        printf("] %s                          \n", text);
+        break;
+    case 2:
+        if (go_up == 1)
+            fb_cursor_up(1);
+
+        fb_text_color(0xffffff, NULL);
+        printf("[");
+        fb_text_color(0xfcf44e, NULL);
+        printf("WARNING");
+        fb_text_color(0xffffff, NULL);
+        printf("] %s                          \n", text);
+        break;
+    case 3:
+        if (go_up == 1)
+            fb_cursor_up(1);
+
+        fb_text_color(0xffffff, NULL);
+        printf("[");
+        fb_text_color(0xfc4e4e, NULL);
+        printf("ERROR");
+        fb_text_color(0xffffff, NULL);
+        printf("]   %s                          \n", text);
+        break;
+    case 4:
+        if (go_up == 1)
+            fb_cursor_up(1);
+
+        fb_text_color(0xffffff, NULL);
+        printf("[");
+        fb_text_color(0x4eb4fc, NULL);
+        printf("PENDING");
+        fb_text_color(0xffffff, NULL);
+        printf("] %s                          \n", text);
+        break;
+    }
+
+    if (do_swap)
+        fb_swap();
+}
+
+void fb_print_status_swap(int state)
+{
+    do_swap = state;
 }

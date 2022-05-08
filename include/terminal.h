@@ -19,15 +19,14 @@
 #define PENDING 4
 
 void init_terminal();
-void clear_terminal();
-void print(char *string);
-void println(char *string);
-void cursor_up(int lines);
-void cursor_down(int lines);
-void cursor_left(int spaces);
-void cursor_right(int spaces);
-void putchar(char character);
-void write(char *string, size_t length);
-void print_status(char *text, int level, int go_up);
+void tm_clear();
+void tm_print(char *string);
+void tm_println(char *string);
+void tm_cursor_up(int lines);
+void tm_cursor_down(int lines);
+void tm_cursor_left(int spaces);
+void tm_cursor_right(int spaces);
+void tm_putchar(char character);
+void tm_print_status(char *text, int level, int go_up);
 
 #endif

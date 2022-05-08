@@ -9,7 +9,10 @@ ifeq ($(origin LD), default)
 LD := ld
 endif
 
+ASM := nasm
+
 CFLAGS ?= -O2 -g -Wall -Wextra -Wpedantic -pipe
+ASMFLAGS ?= -felf64
 
 LDFLAGS ?=
 
@@ -36,18 +39,23 @@ override INTERNALLDFLAGS :=    \
 	-static
  
 override CFILES := $(shell find ./src -type f -name '*.c')
+override ASMFILES := $(shell find ./src -type f -name '*.s')
 override OBJ := $(CFILES:.c=.o)
+override ASMOBJ := $(ASMFILES:.s=.o)
 override HEADER_DEPS := $(CFILES:.c=.d)
  
 .PHONY: all
 all: clean $(KERNEL) iso
  
-$(KERNEL): $(OBJ)
-	$(LD) $(OBJ) $(LDFLAGS) $(INTERNALLDFLAGS) -o $@
+$(KERNEL): $(OBJ) $(ASMOBJ)
+	$(LD) $(OBJ) $(ASMOBJ) $(LDFLAGS) $(INTERNALLDFLAGS) -o $@
  
 -include $(HEADER_DEPS)
 %.o: %.c
 	$(CC) $(CFLAGS) $(INTERNALCFLAGS) -c $< -o $@
+
+%.o: %.asm
+	$(ASM) $(ASMFLAGS) $< -o $@
 
 iso: clean
 	if [ ! -d "./limine" ]; then git clone https://github.com/limine-bootloader/limine.git --branch=v3.0-branch-binary --depth=1 && make -C limine; fi
