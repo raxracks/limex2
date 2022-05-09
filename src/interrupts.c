@@ -83,6 +83,9 @@ uint64_t isr_handler(uint64_t rsp)
             printf("syscall\n");
 
             printf("ℹ Register dump:\n\n");
+
+            // asm("pop %rax");
+
             printf("⤷ rax: 0x%.16llx, rbx:    0x%.16llx, rcx: 0x%.16llx, rdx: 0x%.16llx\n"
                    "⤷ rsi: 0x%.16llx, rdi:    0x%.16llx, rbp: 0x%.16llx, r8 : 0x%.16llx\n"
                    "⤷ r9 : 0x%.16llx, r10:    0x%.16llx, r11: 0x%.16llx, r12: 0x%.16llx\n"

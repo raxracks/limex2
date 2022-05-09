@@ -6,7 +6,7 @@ ifeq ($(origin LD), default)
 LD := ld
 endif
 
-CFLAGS ?= -O2 -g -Wall -Wextra -Wpedantic -pipe
+CFLAGS ?= -O1 -g -Wall -Wextra -Wpedantic -pipe
 
 LDFLAGS ?=
 
@@ -37,7 +37,7 @@ override OBJ := $(CFILES:.c=.o)
 override HEADER_DEPS := $(CFILES:.c=.d)
  
 .PHONY: all
-all: compile
+all: compile convert
  
 compile: $(OBJ)
 	objcopy -O binary -j .text apps/test.o binfile
@@ -45,3 +45,6 @@ compile: $(OBJ)
 -include $(HEADER_DEPS)
 %.o: %.c
 	$(CC) $(CFLAGS) $(INTERNALCFLAGS) -c $< -o $@
+
+convert:
+	bin2c/bin2c binfile program.h test

@@ -30,7 +30,7 @@ void panic(char *reason)
 {
     fb_clear(0xff0000);
     fb_cursor_reset();
-    printf("KERNEL PANIC!!!\n", RED);
+    printf("KERNEL PANIC!\n", RED);
     printf("%s", reason);
 
     fb_swap();
@@ -84,7 +84,7 @@ void _start(void)
     // int addr = &hi;
 
     unsigned char *destptr = (unsigned char *)0x20000000;
-    memcpy(destptr, test, test_size);
+    memcpy(destptr, test, test_length);
 
     typedef void (*func_ptr)(void);
     func_ptr f = (func_ptr)(destptr);
