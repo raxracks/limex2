@@ -6,7 +6,7 @@ ifeq ($(origin LD), default)
 LD := ld
 endif
 
-CFLAGS ?= -O1 -g -Wall -Wextra -Wpedantic -pipe
+CFLAGS ?= -Ofast -g -Wall -Wextra -Wpedantic -pipe
 
 LDFLAGS ?=
 
