@@ -3,8 +3,6 @@
 
 void main()
 {
-    syscall(169, 0x10, 0x20, 0x30, "hello");
-    while (1)
-        ;
-    return;
+    // test values
+    syscall(0x1, 0x10, 0x20, 0x30, 0x40);
 }

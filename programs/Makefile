@@ -47,4 +47,4 @@ compile: $(OBJ)
 	$(CC) $(CFLAGS) $(INTERNALCFLAGS) -c $< -o $@
 
 convert:
-	bin2c/bin2c binfile program.h test
+	bin2c/bin2c binfile program.c test
