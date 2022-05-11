@@ -8,7 +8,6 @@ void pic_disable(void)
     outb(PIC1_DATA, 0xFF);
 }
 
-// remap the programmable interrupt controller
 void pic_remap(void)
 {
     uint8_t mask1 = inb(PIC1_DATA);
@@ -43,7 +42,6 @@ void pic_remap(void)
     outb(PIC2_DATA, mask2);
 }
 
-// use internel PIC register: IMR to ignore irq_lines
 void pic_set_mask(uint8_t irq_line)
 {
     uint16_t port;
@@ -62,7 +60,6 @@ void pic_set_mask(uint8_t irq_line)
     outb(port, value);
 }
 
-// "undo" pic_set_mask
 void pic_clear_mask(uint8_t irq_line)
 {
     uint16_t port;
@@ -81,11 +78,10 @@ void pic_clear_mask(uint8_t irq_line)
     outb(port, value);
 }
 
-// signal an end of interrupt
-void pic_signal_EOI(uint64_t isr_number)
+void pic_end_of_interrupt(uint64_t isr_number)
 {
-    if (isr_number >= 40) // if the IRQ came from the slave PIC
+    if (isr_number >= 40)
         outb(PIC2_COMMAND, 0x20);
 
-    outb(PIC1_COMMAND, 0x20); // if the IRQ came from the master and/or the slave PIC
+    outb(PIC1_COMMAND, 0x20);
 }

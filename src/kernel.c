@@ -14,6 +14,7 @@
 #include <io.h>
 #include <memory.h>
 #include <program.h>
+#include <syscall.h>
 
 // nice hardcoding
 int frames = 0;
@@ -79,7 +80,7 @@ void _start(void)
 
     // outb(0x21, 0xfd);
     // outb(0xa1, 0xff);
-    // asm("sti");
+    asm("sti");
 
     // int addr = &hi;
 
@@ -89,6 +90,8 @@ void _start(void)
     typedef void (*func_ptr)(void);
     func_ptr f = (func_ptr)(destptr);
     f();
+
+    // syscall(0x1, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60);
 
     rtc_print();
     // printf("FPS: %d\n", framesInSecond);

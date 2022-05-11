@@ -2,7 +2,11 @@
   "files.associations": {
     "structs.h": "c",
     "stddef.h": "c",
-    "framebuffer.h": "c"
+    "framebuffer.h": "c",
+    "printf.h": "c",
+    "kernel.h": "c",
+    "syscall.h": "c",
+    "taskbar.h": "c"
   },
   "C_Cpp.errorSquiggles": "Disabled"
 }

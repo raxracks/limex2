@@ -28,5 +28,6 @@ void tm_cursor_left(int spaces);
 void tm_cursor_right(int spaces);
 void tm_putchar(char character);
 void tm_print_status(char *text, int level, int go_up);
+void tm_printlen(char *string, int length);
 
 #endif

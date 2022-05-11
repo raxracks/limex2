@@ -15,6 +15,11 @@ void tm_print(char *string)
     terminal_request.response->write(terminal, string, strlen(string));
 }
 
+void tm_printlen(char *string, int length)
+{
+    terminal_request.response->write(terminal, string, length);
+}
+
 void tm_println(char *string)
 {
     tm_print(string);
