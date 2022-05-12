@@ -88,8 +88,8 @@ void _start(void)
     memcpy(destptr, test, test_length);
 
     typedef void (*func_ptr)(void);
-    func_ptr f = (func_ptr)(destptr);
-    f();
+    func_ptr system_exec = (func_ptr)(destptr);
+    system_exec();
 
     // syscall(0x1, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60);
 

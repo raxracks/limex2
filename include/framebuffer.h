@@ -20,5 +20,6 @@ void fb_cursor_set_pos(int x, int y);
 void fb_cursor_reset();
 void fb_print_status(char *text, int level, int go_up);
 void fb_print_status_swap(int state);
+uint64_t fb_get();
 
 #endif

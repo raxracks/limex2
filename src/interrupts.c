@@ -98,12 +98,23 @@ uint64_t isr_handler(uint64_t rsp)
         if (cpu->isr_number == 34)
         {
             printf("syscall 0x%x\n", cpu->rax);
-            printf("0x%x ", cpu->rdi);
+            printf("args: 0x%x ", cpu->rdi);
             printf("0x%x ", cpu->rbp);
             printf("0x%x ", cpu->rdx);
             printf("0x%x ", cpu->r10);
             printf("0x%x ", cpu->r8);
             printf("0x%x\n", cpu->r9);
+
+            switch (cpu->rax)
+            {
+            case 0x1:
+                printf("returning framebuffer address\n");
+                cpu->rax = fb_get();
+                break;
+            case 0x2:
+                fb_swap();
+                break;
+            }
 
             // rax = num
             // rdi = arg1

@@ -248,3 +248,8 @@ void fb_print_status_swap(int state)
 {
     do_swap = state;
 }
+
+uint64_t fb_get()
+{
+    return framebuffer_struct->address;
+}
