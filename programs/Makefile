@@ -47,7 +47,7 @@ compile: $(OBJ)
 	$(CC) $(CFLAGS) $(INTERNALCFLAGS) -c $< -o $@
 
 convert:
-	bin2c/bin2c binfile program.c test
+	bin2c/bin2c binfile ../src/system_exec.c system_exec
 
 clean:
 	rm -rf apps/*.o apps/*.d program.c

@@ -13,7 +13,7 @@
 #include <idt.h>
 #include <io.h>
 #include <memory.h>
-#include <program.h>
+#include <system_exec.h>
 #include <syscall.h>
 
 // nice hardcoding
@@ -85,7 +85,7 @@ void _start(void)
     // int addr = &hi;
 
     unsigned char *destptr = (unsigned char *)0x20000000;
-    memcpy(destptr, test, test_length);
+    memcpy(destptr, system_exec, system_exec_length);
 
     typedef void (*func_ptr)(void);
     func_ptr system_exec = (func_ptr)(destptr);
