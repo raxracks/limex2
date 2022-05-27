@@ -2,7 +2,8 @@
 #define SYSCALL_H
 
 #define SYSCALL_FB_ADDR 0x1
-#define SYSCALL_FB_SWAP 0x2
+#define SYSCALL_OUTB 0x2
+#define SYSCALL_INB 0x3
 
 #include <stdint.h>
 

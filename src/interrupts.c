@@ -21,6 +21,7 @@
 #include <printf.h>
 #include <framebuffer.h>
 #include <keyboard.h>
+#include <io.h>
 
 static const char *exceptions[] =
     {
@@ -112,7 +113,13 @@ uint64_t isr_handler(uint64_t rsp)
                 cpu->rax = fb_get();
                 break;
             case 0x2:
-                fb_swap();
+                // printf("returning framebuffer address\n");
+                // outb(cpu->rbp, cpu->rdx);
+                // cpu->rax = 0;
+                break;
+            case 0x3:
+                // printf("returning framebuffer address\n");
+                // cpu->rax = inb(cpu->rbp);
                 break;
             }
 
@@ -138,7 +145,7 @@ uint64_t isr_handler(uint64_t rsp)
         printf("apic spurious interrupt");
     }
 
-    fb_swap();
+    // fb_swap();
 
     pic_end_of_interrupt(cpu->isr_number);
 

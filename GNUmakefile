@@ -45,7 +45,7 @@ override ASMOBJ := $(ASMFILES:.s=.o)
 override HEADER_DEPS := $(CFILES:.c=.d)
  
 .PHONY: all
-all: clean $(KERNEL) iso
+all: clean apps $(KERNEL) iso
  
 $(KERNEL): $(OBJ) $(ASMOBJ)
 	$(LD) $(OBJ) $(ASMOBJ) $(LDFLAGS) $(INTERNALLDFLAGS) -o $@
@@ -81,3 +81,6 @@ run:
 .PHONY:
 clean:
 	rm -rf $(KERNEL) $(OBJ) $(HEADER_DEPS) $(ISO) output/*
+
+apps:
+	make -C programs

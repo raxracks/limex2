@@ -1,2 +1,2 @@
 wsl make
-qemu-system-x86_64 -cdrom output/limex.iso -m 4G
+qemu-system-x86_64 -cdrom output/limex.iso -m 8G
